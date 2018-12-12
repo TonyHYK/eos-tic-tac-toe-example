@@ -33,7 +33,9 @@ class App extends Component {
   };
 
   async componentDidMount() {
-    const connected = await scatter.connect("Tic Tac Toe");
+    const connected = await scatter.connect(
+      `Tic Tac Toe ${window.location.port}`
+    );
     if (connected) {
       await scatter.getIdentity({ accounts: [network] });
       const account = scatter.identity.accounts.find(
@@ -45,23 +47,33 @@ class App extends Component {
     }
 
     this.eos = scatter.eos(network, EOS);
-    const data = await this.eos.getTableRows({
-      json: true,
-      code: "tictactoe123",
-      scope: TONY,
-      table: "games"
-    });
-    if (data && data.rows[0]) {
-      const game = data.rows[0];
-      this.setState({
-        turn: game.turn,
-        board: game.board,
-        winner: game.winner
+    setInterval(async () => {
+      const data = await this.eos.getTableRows({
+        json: true,
+        code: "tictactoe123",
+        scope: TONY,
+        table: "games"
       });
-    }
+      if (data && data.rows[0]) {
+        const game = data.rows[0];
+        this.setState({
+          turn: game.turn,
+          board: game.board,
+          winner: game.winner
+        });
+      }
+    }, 2000);
   }
 
-  move = async i => {};
+  move = async i => {
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    const account = this.state.account;
+    const contract = await this.eos.contract("tictactoe123");
+    contract.move(JOHN, TONY, account.name, row, col, {
+      authorization: [`${account.name}@${account.authority}`]
+    });
+  };
 
   render() {
     const { account, host, challenger, turn, board, winner } = this.state;
