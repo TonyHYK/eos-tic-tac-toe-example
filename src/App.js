@@ -32,7 +32,18 @@ class App extends Component {
     winner: "none"
   };
 
-  async componentDidMount() {}
+  async componentDidMount() {
+    const connected = await scatter.connect("Tic Tac Toe");
+    if (connected) {
+      await scatter.getIdentity({ accounts: [network] });
+      const account = scatter.identity.accounts.find(
+        x => x.blockchain === "eos"
+      );
+      this.setState({
+        account
+      });
+    }
+  }
 
   move = async i => {};
 
