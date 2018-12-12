@@ -43,6 +43,22 @@ class App extends Component {
         account
       });
     }
+
+    this.eos = scatter.eos(network, EOS);
+    const data = await this.eos.getTableRows({
+      json: true,
+      code: "tictactoe123",
+      scope: TONY,
+      table: "games"
+    });
+    if (data && data.rows[0]) {
+      const game = data.rows[0];
+      this.setState({
+        turn: game.turn,
+        board: game.board,
+        winner: game.winner
+      });
+    }
   }
 
   move = async i => {};
